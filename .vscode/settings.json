@@ -10,7 +10,7 @@
     // 不然源码文件和编译结果混杂在一个目录中非常杂乱（尤其是刷题时）
     // 这里只保留了 C 和 C++ 的编译命令，有需要其他语言的请自行添加
     "code-runner.executorMap": {
-        "cpp": "clang++ $fileName `pkg-config opencv --cflags --libs` -o /home/booiris/build/$fileNameWithoutExt && /home/booiris/build/$fileNameWithoutExt",
+        "cpp": "clang++ $fileName `pkg-config opencv --cflags --libs` -lm -o /home/booiris/build/$fileNameWithoutExt && /home/booiris/build/$fileNameWithoutExt",
         // g++ $fileName -o build/$fileNameWithoutExt && .\\build\\$fileNameWithoutExt
     },
     // 在运行代码之前保存文件
