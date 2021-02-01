@@ -16,7 +16,6 @@ public:
 int main()
 {
     Mat pic = imread("data.PNG", IMREAD_GRAYSCALE);
-    cout << pic.channels() << endl;
-    cout << pic.rows << " " << pic.cols << endl;
+
 
 }
