@@ -9,15 +9,19 @@
 
 using namespace std;
 using namespace cv;
-int maxn, row, col, k_cnt, S;
+int maxn, row, col, k_cnt;
+double S;
 double Lab[3][1024][1024];
 struct Point
 {
-    int x, y, num;
+    double L, a, b, x, y;
+    int cnt;
 } center[100005];
 Mat pic;
 double min_dis[1024][1024];
 int belong[1024][1024];
+double group_sum[5][100005];
+int param_m = 10;
 
 inline double get_grad(int &x, int &y)
 {
@@ -57,13 +61,16 @@ void get_center(int &x, int &y)
 void init()
 {
     int center_index = 0;
-    int len = sqrt(1.0 * S);
+    int len = S;
     for (int i = len / 2; i < row; i += len)
     {
         for (int j = len / 2; j < col; j += len)
         {
             int x = i, y = j;
             get_center(x, y);
+            center[center_index].L = Lab[0][x][y];
+            center[center_index].a = Lab[1][x][y];
+            center[center_index].b = Lab[2][x][y];
             center[center_index].x = x;
             center[center_index].y = y;
             center_index++;
@@ -83,12 +90,16 @@ double get_dis()
 {
 }
 
-void SLIC()
+double SLIC()
 {
-    int len = sqrt(1.0 * S);
+    int len = S;
     for (int nowp = 0; nowp < k_cnt; nowp++)
     {
-        int x = center[nowp].x, y = center[nowp].y;
+        center[nowp].cnt = 0;
+        double x = center[nowp].x, y = center[nowp].y;
+        for (int i = 0; i < 5; i++)
+            group_sum[i][nowp] = 0;
+        double 
         for (int i = -len; i <= len; i++)
         {
             for (int j = -len; j <= len; j++)
@@ -105,7 +116,35 @@ void SLIC()
             }
         }
     }
-    
+    for (int i = 0; i < row; i++)
+    {
+        for (int j = 0; j < col; j++)
+        {
+            group_sum[0][belong[i][j]] += Lab[0][i][j];
+            group_sum[1][belong[i][j]] += Lab[1][i][j];
+            group_sum[2][belong[i][j]] += Lab[2][i][j];
+            group_sum[3][belong[i][j]] += i;
+            group_sum[4][belong[i][j]] += j;
+            center[belong[i][j]].cnt++;
+        }
+    }
+    double E = 0;
+    for (int i = 0; i < k_cnt; i++)
+    {
+        double L = group_sum[0][i] /= center[i].cnt;
+        double a = group_sum[1][i] /= center[i].cnt;
+        double b = group_sum[2][i] /= center[i].cnt;
+        double x = group_sum[3][i] /= center[i].cnt;
+        double y = group_sum[4][i] /= center[i].cnt;
+        double temp = (L - center[i].L) * (L - center[i].L);
+        temp += (a - center[i].a) * (a - center[i].a);
+        temp += (b - center[i].b) * (b - center[i].b);
+        temp += (x - center[i].x) * (x - center[i].x);
+        temp += (y - center[i].y) * (y - center[i].y);
+
+        E += sqrt(temp);
+    }
+    return E;
 }
 
 int main()
@@ -119,8 +158,7 @@ int main()
     // cout << "cin>>k" << endl;
     // cin >> k_cnt;
     k_cnt = 1024;
-    S = maxn / k_cnt;
-    cout << S << endl;
+    S = sqrt(1.0 * maxn / k_cnt);
 
     color_convert(pic, Lab);
     init();
