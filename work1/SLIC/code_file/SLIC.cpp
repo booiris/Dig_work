@@ -1,27 +1,27 @@
 #include <opencv.hpp>
 #include <string>
-#include <vector>
 #include <cstdio>
 #include <iostream>
 #include <math.h>
 #include <time.h>
 #include "../head_file/color_convert.h"
+#include "../head_file/draw.h"
 
 using namespace std;
 using namespace cv;
 int maxn, row, col, k_cnt;
 double S;
-double Lab[3][1024][1024];
+double Lab[3][1500][1500];
 struct Point
 {
     double L, a, b, x, y;
     int cnt;
 } center[100005];
 Mat pic;
-double min_dis[1024][1024];
-int belong[1024][1024];
-double group_sum[5][100005];
-int param_m = 10;
+double min_dis[1500][1500];
+int belong[1500][1500];
+int group_sum[5][100005];
+int param_m = 40;
 
 inline double get_grad(int &x, int &y)
 {
@@ -62,9 +62,9 @@ void init()
 {
     int center_index = 0;
     int len = S;
-    for (int i = len / 2; i < row; i += len)
+    for (int i = len / 2; i < row && center_index < k_cnt; i += len)
     {
-        for (int j = len / 2; j < col; j += len)
+        for (int j = len / 2; j < col && center_index < k_cnt; j += len)
         {
             int x = i, y = j;
             get_center(x, y);
@@ -78,7 +78,7 @@ void init()
     }
     if (center_index != k_cnt)
     {
-        cout << center_index << " " << k_cnt << endl;
+        cout << "wrong: " << center_index << " " << k_cnt << endl;
         exit(-1);
     }
     for (int i = 0; i < row; i++)
@@ -86,20 +86,28 @@ void init()
             min_dis[i][j] = 1e9, belong[i][j] = -1;
 }
 
-double get_dis()
+double get_dis(int &x, int &y, int &centre_index)
 {
+    double d_c = (center[centre_index].L - Lab[0][x][y]) * (center[centre_index].L - Lab[0][x][y]);
+    d_c += (center[centre_index].a - Lab[1][x][y]) * (center[centre_index].a - Lab[1][x][y]);
+    d_c += (center[centre_index].b - Lab[2][x][y]) * (center[centre_index].b - Lab[2][x][y]);
+
+    double d_s = (center[centre_index].x - x) * (center[centre_index].x - x);
+    d_s = (center[centre_index].y - y) * (center[centre_index].y - y);
+    d_s = d_s * k_cnt / maxn * param_m * param_m;
+    return sqrt(d_c + d_s);
 }
 
 double SLIC()
 {
-    int len = S;
+    int len = S + 1;
     for (int nowp = 0; nowp < k_cnt; nowp++)
     {
         center[nowp].cnt = 0;
         double x = center[nowp].x, y = center[nowp].y;
         for (int i = 0; i < 5; i++)
             group_sum[i][nowp] = 0;
-        double 
+
         for (int i = -len; i <= len; i++)
         {
             for (int j = -len; j <= len; j++)
@@ -107,7 +115,7 @@ double SLIC()
                 int nx = x + i, ny = y + j;
                 if (nx < 0 || nx >= row || ny < 0 || ny > col)
                     continue;
-                double dis = get_dis();
+                double dis = get_dis(nx, ny, nowp);
                 if (dis < min_dis[nx][ny])
                 {
                     min_dis[nx][ny] = dis;
@@ -131,17 +139,21 @@ double SLIC()
     double E = 0;
     for (int i = 0; i < k_cnt; i++)
     {
-        double L = group_sum[0][i] /= center[i].cnt;
-        double a = group_sum[1][i] /= center[i].cnt;
-        double b = group_sum[2][i] /= center[i].cnt;
-        double x = group_sum[3][i] /= center[i].cnt;
-        double y = group_sum[4][i] /= center[i].cnt;
+        double L = 1.0 * group_sum[0][i] / center[i].cnt;
+        double a = 1.0 * group_sum[1][i] / center[i].cnt;
+        double b = 1.0 * group_sum[2][i] / center[i].cnt;
+        double x = 1.0 * group_sum[3][i] / center[i].cnt;
+        double y = 1.0 * group_sum[4][i] / center[i].cnt;
         double temp = (L - center[i].L) * (L - center[i].L);
         temp += (a - center[i].a) * (a - center[i].a);
         temp += (b - center[i].b) * (b - center[i].b);
         temp += (x - center[i].x) * (x - center[i].x);
         temp += (y - center[i].y) * (y - center[i].y);
-
+        center[i].L = L;
+        center[i].a = a;
+        center[i].b = b;
+        center[i].x = x;
+        center[i].y = y;
         E += sqrt(temp);
     }
     return E;
@@ -151,18 +163,21 @@ int main()
 {
     clock_t start, end;
     start = clock();
-    pic = imread("../cut.jpg", IMREAD_GRAYSCALE);
+    pic = imread("../p1.jpg");
     row = pic.rows, col = pic.cols;
     maxn = row * col;
 
     // cout << "cin>>k" << endl;
     // cin >> k_cnt;
-    k_cnt = 1024;
+    k_cnt = 500;
     S = sqrt(1.0 * maxn / k_cnt);
-
     color_convert(pic, Lab);
     init();
-
+    cout << row << " " << col << endl;
+    for (int i = 0; i < 40; i++)
+        SLIC();
+    draw();
+    imwrite("../res.png", pic);
     end = clock();
     cout << "time = " << double(end - start) / CLOCKS_PER_SEC << "s" << endl;
 }

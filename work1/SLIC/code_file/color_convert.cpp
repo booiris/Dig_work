@@ -1,6 +1,6 @@
 #include <opencv.hpp>
 #include <cmath>
-
+#include "../head_file/SLIC.h"
 using namespace cv;
 inline double gamma(double x)
 {
@@ -32,7 +32,7 @@ inline void RGB2Lab(uchar R, uchar G, uchar B, double &L, double &a, double &b)
     b = 200 * (fy - fz);
 }
 
-void color_convert(Mat &pic, double Lab[][1024][1024])
+void color_convert(Mat &pic, double Lab[][1500][1500])
 {
     for (int i = 0; i < pic.rows; i++)
         for (int j = 0; j < pic.cols; j++)
