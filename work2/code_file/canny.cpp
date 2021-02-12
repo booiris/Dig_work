@@ -3,6 +3,7 @@
 #include <iostream>
 #include <math.h>
 #include <string>
+#include <vector>
 using namespace std;
 using namespace cv;
 
@@ -70,66 +71,124 @@ void smooth(Mat &pic, Mat &mat, double t_mat[][10])
 
 double grad[1500][1500], point_dir[1500][1500];
 int row, col;
-
-void sobel(Mat &mat)
+Mat out;
+void sobel(Mat &mat, Mat &out)
 {
     for (int i = 1; i < mat.rows - 1; i++)
     {
         for (int j = 1; j < mat.cols - 1; j++)
         {
-            double gx = 2 * mat.at<uchar>(i, j + 1) + mat.at<uchar>(i - 1, j + 1) + mat.at<uchar>(i + 1, j + 1) - 2 * mat.at<uchar>(i, j - 1) - mat.at<uchar>(i - 1, j - 1) - mat.at<uchar>(i + 1, j - 1);
+            double gx = 2.0 * mat.at<uchar>(i, j + 1) + mat.at<uchar>(i - 1, j + 1) + mat.at<uchar>(i + 1, j + 1) - 2.0 * mat.at<uchar>(i, j - 1) - mat.at<uchar>(i - 1, j - 1) - mat.at<uchar>(i + 1, j - 1);
 
-            double gy = 2 * mat.at<uchar>(i - 1, j) + mat.at<uchar>(i - 1, j + 1) + mat.at<uchar>(i - 1, j - 1) - 2 * mat.at<uchar>(i + 1, j) - mat.at<uchar>(i + 1, j - 1) - mat.at<uchar>(i + 1, j + 1);
+            double gy = 2.0 * mat.at<uchar>(i - 1, j) + mat.at<uchar>(i - 1, j + 1) + mat.at<uchar>(i - 1, j - 1) - 2.0 * mat.at<uchar>(i + 1, j) - mat.at<uchar>(i + 1, j - 1) - mat.at<uchar>(i + 1, j + 1);
 
             grad[i][j] = sqrt(gx * gx + gy * gy);
+            out.at<uchar>(i, j) = grad[i][j] > 255 ? 255 : grad[i][j];
+
             if (gx == 0)
-                gx = 1e-9;
-            point_dir[i][j] = atan(gy / gx) + pi / 2;
+                point_dir[i][j] = atan(gy / 1e-9);
+            else
+                point_dir[i][j] = atan(gy / gx);
         }
     }
 }
-
-void local_max_value()
+void local_max_value(Mat &out)
 {
     for (int i = 1; i < row - 1; i++)
     {
         for (int j = 1; j < col - 1; j++)
         {
-            double 
-        }
-    }
-}
-
-void double_threshold_link(Mat &out, uchar lowThreshold, uchar highThreshold)
-{
-    for (int i = 1; i < row - 1; i++)
-    {
-        for (int j = 1; j < col - 1; j++)
-        {
-            if (out.at<uchar>(i, j) == 255)
+            if (point_dir[i][j] >= 0 && point_dir[i][j] < pi / 4)
             {
-                for (int k = -1; k <= 1; k++)
+                double g_up = grad[i][j + 1] + (grad[i - 1][j + 1] - grad[i][j + 1]) * tan(point_dir[i][j]);
+                double g_down = grad[i][j - 1] + (grad[i + 1][j - 1] - grad[i][j - 1]) * tan(point_dir[i][j]);
+                if (grad[i][j] <= g_up || grad[i][j] <= g_down)
+                    out.at<uchar>(i, j) = 0;
+            }
+            if (point_dir[i][j] >= pi / 4 && point_dir[i][j] < pi / 2)
+            {
+                double g_up = grad[i - 1][j] + (grad[i - 1][j + 1] - grad[i - 1][j]) * tan(point_dir[i][j]);
+                double g_down = grad[i + 1][j] + (grad[i + 1][j - 1] - grad[i + 1][j]) * tan(point_dir[i][j]);
+                if (grad[i][j] <= g_up || grad[i][j] <= g_down)
+                    out.at<uchar>(i, j) = 0;
+            }
+            if (point_dir[i][j] > -pi / 2 && point_dir[i][j] <= -pi / 4)
+            {
+                double g_up = grad[i - 1][j] + (grad[i - 1][j - 1] - grad[i - 1][j]) * tan(point_dir[i][j]);
+                double g_down = grad[i + 1][j] + (grad[i + 1][j + 1] - grad[i + 1][j]) * tan(point_dir[i][j]);
+                if (grad[i][j] <= g_up || grad[i][j] <= g_down)
+                    out.at<uchar>(i, j) = 0;
+            }
+            if (point_dir[i][j] > -pi / 4 && point_dir[i][j] <= 0)
+            {
+                double g_up = grad[i][j - 1] + (grad[i - 1][j - 1] - grad[i][j - 1]) * tan(point_dir[i][j]);
+                double g_down = grad[i][j + 1] + (grad[i + 1][j + 1] - grad[i][j + 1]) * tan(point_dir[i][j]);
+                if (grad[i][j] <= g_up || grad[i][j] <= g_down)
+                    out.at<uchar>(i, j) = 0;
+            }
+        }
+    }
+}
+
+int dir_8[8][2] = {0, 1, 0, -1, 1, 0, -1, 0, 1, 1, -1, -1, 1, -1, -1, 1};
+vector<int> x_list;
+vector<int> y_list;
+bool vis[1500][1500], flag;
+void dfs(int nowx, int nowy)
+{
+    vis[nowx][nowy] = 1;
+    x_list.push_back(nowx);
+    y_list.push_back(nowy);
+    for (int i = 0; i < 8; i++)
+    {
+        int nx = nowx + dir_8[i][0], ny = nowy + dir_8[i][1];
+        if (nx < 0 || nx >= row || ny < 0 || ny >= col || vis[nx][ny])
+            continue;
+        if (out.at<uchar>(nx, ny) == 255)
+        {
+            flag = 1;
+            continue;
+        }
+        if (out.at<uchar>(nx, ny) == 0)
+            continue;
+        dfs(nx, ny);
+    }
+}
+
+void double_threshold_link(uchar lowThreshold, uchar highThreshold)
+{
+    for (int i = 1; i < row - 1; i++)
+    {
+        for (int j = 1; j < col - 1; j++)
+        {
+            if (out.at<uchar>(i, j) > lowThreshold && out.at<uchar>(i, j) < highThreshold)
+            {
+                x_list.clear();
+                y_list.clear();
+                flag = 0;
+                dfs(i, j);
+                if (flag)
                 {
-                    for (int l = -1; l <= 1; l++)
+                    for (int k = 0; k < (int)x_list.size(); k++)
                     {
-                        if (out.at<uchar>(i + k, j + l) != 0)
-                            out.at<uchar>(i + k, j + l) = 255;
+                        vis[x_list[k]][y_list[k]] = 0;
+                        out.at<uchar>(x_list[k], y_list[k]) = 255;
+                    }
+                }
+                else
+                {
+                    for (int k = 0; k < (int)x_list.size(); k++)
+                    {
+                        vis[x_list[k]][y_list[k]] = 0;
+                        out.at<uchar>(x_list[k], y_list[k]) = 0;
                     }
                 }
             }
         }
     }
-    for (int i = 0; i < row; i++)
-    {
-        for (int j = 0; j < col; j++)
-        {
-            if (out.at<uchar>(i, j) != 255)
-                out.at<uchar>(i, j) = 0;
-        }
-    }
 }
 
-void double_threshold(Mat &out, uchar lowThreshold, uchar highThreshold)
+void double_threshold(uchar lowThreshold, uchar highThreshold)
 {
     for (int i = 0; i < row; i++)
     {
@@ -141,7 +200,7 @@ void double_threshold(Mat &out, uchar lowThreshold, uchar highThreshold)
                 out.at<uchar>(i, j) = 0;
         }
     }
-    double_threshold_link(out, lowThreshold, highThreshold);
+    double_threshold_link(lowThreshold, highThreshold);
 }
 
 int main()
@@ -149,12 +208,21 @@ int main()
     double t_mat[10][10];
     GaussianTemplate(t_mat);
     Mat pic = imread("../data.jpg");
+    // Rect rect(0, (int)(0.3 * pic.rows), pic.cols, (int)(0.7 * pic.rows));
+    // pic = pic(rect);
+    // Mat gray = imread("../pic.jpg", IMREAD_GRAYSCALE);
     row = pic.rows, col = pic.cols;
     Mat gray = Mat::zeros(pic.size(), CV_8UC1);
     rgb2gray(pic, gray);
-    Mat out = gray.clone();
+    out = gray.clone();
     smooth(gray, out, t_mat);
-    // imshow("gray", gray);
-    // imshow("smooth", out);
-    // waitKey(0);
+    sobel(gray, out);
+    local_max_value(out);
+    double_threshold(50, 200);
+    Mat temp = gray.clone();
+    Canny(temp, temp, 50, 200, 3, true);
+    imshow("gray", gray);
+    imshow("sout", out);
+    imshow("temp", temp);
+    waitKey(0);
 }
