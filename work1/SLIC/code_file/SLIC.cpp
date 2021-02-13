@@ -1,3 +1,5 @@
+// 本文件负责实现聚类过程
+
 #include <opencv.hpp>
 #include <string>
 #include <cstdio>
@@ -9,7 +11,7 @@
 
 using namespace std;
 using namespace cv;
-int maxn, row, col, k_cnt;
+int maxn, row, col;
 double S;
 double Lab[3][1500][1500];
 struct Point
@@ -21,10 +23,11 @@ Mat pic;
 double min_dis[1500][1500];
 int belong[1500][1500];
 int group_sum[5][100005];
-int param_m = 40;
+int param_m = 32，, k_cnt = 7; // 设置参数，param_m为计算距离时比例参数，k_cnt为超像素数量
 
 inline double get_grad(int &x, int &y)
 {
+    // 该函数为超像素中心初始化时计算梯度函数
     double Lx, ax, bx, Ly, ay, by;
     Lx = (x - 1 >= 0 ? Lab[0][x - 1][y] : 0) - (x + 1 < row ? Lab[0][x + 1][y] : 0);
     ax = (x - 1 >= 0 ? Lab[1][x - 1][y] : 0) - (x + 1 < row ? Lab[1][x + 1][y] : 0);
@@ -39,6 +42,7 @@ inline double get_grad(int &x, int &y)
 
 void get_center(int &x, int &y)
 {
+    // 该函数为初始化超像素中心
     double min_grad = 1e9, temp_grad;
     int temp_x, temp_y;
     for (int i = -1; i <= 1; i++)
@@ -48,6 +52,7 @@ void get_center(int &x, int &y)
             int nx = x + i, ny = y + j;
             if (nx < 0 || nx >= row || ny < 0 || ny >= col)
                 continue;
+            // 获取梯度后，选取最小梯度作为中心
             if (min_grad > (temp_grad = get_grad(nx, ny)))
             {
                 min_grad = temp_grad;
@@ -60,8 +65,11 @@ void get_center(int &x, int &y)
 
 void init()
 {
+    // 算法初始化
     int center_index = 0;
     int len = S;
+
+    // 获取超像素中心
     for (int i = len / 2; i < row && center_index < k_cnt; i += len)
     {
         for (int j = len / 2; j < col && center_index < k_cnt; j += len)
@@ -81,6 +89,7 @@ void init()
         cout << "wrong: " << center_index << " " << k_cnt << endl;
         exit(-1);
     }
+    // 像素到类中心的最小距离，像素属于的类进行初始化
     for (int i = 0; i < row; i++)
         for (int j = 0; j < col; j++)
             min_dis[i][j] = 1e9, belong[i][j] = -1;
@@ -88,10 +97,14 @@ void init()
 
 double get_dis(int &x, int &y, int &centre_index)
 {
+    // 计算像素点到类中心的距离函数
+
+    // 计算颜色特征距离
     double d_c = (center[centre_index].L - Lab[0][x][y]) * (center[centre_index].L - Lab[0][x][y]);
     d_c += (center[centre_index].a - Lab[1][x][y]) * (center[centre_index].a - Lab[1][x][y]);
     d_c += (center[centre_index].b - Lab[2][x][y]) * (center[centre_index].b - Lab[2][x][y]);
 
+    // 计算空间特征距离
     double d_s = (center[centre_index].x - x) * (center[centre_index].x - x);
     d_s = (center[centre_index].y - y) * (center[centre_index].y - y);
     d_s = d_s * k_cnt / maxn * param_m * param_m;
@@ -100,6 +113,7 @@ double get_dis(int &x, int &y, int &centre_index)
 
 double SLIC()
 {
+    // 聚类过程函数
     int len = S + 1;
     for (int nowp = 0; nowp < k_cnt; nowp++)
     {
@@ -116,6 +130,7 @@ double SLIC()
                 if (nx < 0 || nx >= row || ny < 0 || ny > col)
                     continue;
                 double dis = get_dis(nx, ny, nowp);
+                // 当当前像素点到类中心距离小于最小距离时，说明该像素点属于该类，更新最小距离和该点属于的类
                 if (dis < min_dis[nx][ny])
                 {
                     min_dis[nx][ny] = dis;
@@ -124,10 +139,14 @@ double SLIC()
             }
         }
     }
+
+    double E = 0;
+    // 更新类中心
     for (int i = 0; i < row; i++)
     {
         for (int j = 0; j < col; j++)
         {
+            // 对于每一个类，计算它的子像素特征的平均值，更新类中心
             group_sum[0][belong[i][j]] += Lab[0][i][j];
             group_sum[1][belong[i][j]] += Lab[1][i][j];
             group_sum[2][belong[i][j]] += Lab[2][i][j];
@@ -136,7 +155,6 @@ double SLIC()
             center[belong[i][j]].cnt++;
         }
     }
-    double E = 0;
     for (int i = 0; i < k_cnt; i++)
     {
         double L = 1.0 * group_sum[0][i] / center[i].cnt;
@@ -163,13 +181,10 @@ int main()
 {
     clock_t start, end;
     start = clock();
-    pic = imread("../p1.jpg");
+    pic = imread("../cut.jpg");
     row = pic.rows, col = pic.cols;
     maxn = row * col;
 
-    // cout << "cin>>k" << endl;
-    // cin >> k_cnt;
-    k_cnt = 500;
     S = sqrt(1.0 * maxn / k_cnt);
     color_convert(pic, Lab);
     init();

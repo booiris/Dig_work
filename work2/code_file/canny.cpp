@@ -203,26 +203,42 @@ void double_threshold(uchar lowThreshold, uchar highThreshold)
     double_threshold_link(lowThreshold, highThreshold);
 }
 
-int main()
-{
-    double t_mat[10][10];
-    GaussianTemplate(t_mat);
-    Mat pic = imread("../data.jpg");
-    // Rect rect(0, (int)(0.3 * pic.rows), pic.cols, (int)(0.7 * pic.rows));
-    // pic = pic(rect);
-    // Mat gray = imread("../pic.jpg", IMREAD_GRAYSCALE);
-    row = pic.rows, col = pic.cols;
-    Mat gray = Mat::zeros(pic.size(), CV_8UC1);
-    rgb2gray(pic, gray);
-    out = gray.clone();
-    smooth(gray, out, t_mat);
-    sobel(gray, out);
-    local_max_value(out);
-    double_threshold(50, 200);
-    Mat temp = gray.clone();
-    Canny(temp, temp, 50, 200, 3, true);
-    imshow("gray", gray);
-    imshow("sout", out);
-    imshow("temp", temp);
-    waitKey(0);
-}
+// int main()
+// {
+//     double t_mat[10][10];
+//     GaussianTemplate(t_mat);
+//     Mat pic = imread("../data.jpg");
+//     // Rect rect(0, (int)(0.3 * pic.rows), pic.cols, (int)(0.7 * pic.rows));
+//     // pic = pic(rect);
+//     // Mat gray = imread("../pic.jpg", IMREAD_GRAYSCALE);
+//     row = pic.rows, col = pic.cols;
+//     Mat gray = Mat::zeros(pic.size(), CV_8UC1);
+//     rgb2gray(pic, gray);
+//     out = gray.clone();
+//     smooth(gray, out, t_mat);
+//     sobel(gray, out);
+//     local_max_value(out);
+//     double_threshold(50, 200);
+//     Mat temp = gray.clone();
+//     Canny(temp, temp, 50, 200, 3, true);
+
+//     vector<Vec4i> lines;
+//     HoughLinesP(temp, lines, 1, CV_PI / 180, 160, 20, 20);
+//     for (size_t i = 0; i < lines.size(); i++)
+//     {
+//         Vec4i I = lines[i];
+//         double x1 = I[0];
+//         double y1 = I[1];
+//         double x2 = I[2];
+//         double y2 = I[3];
+//         if (abs(x1 - x2) + abs(y1 - y2) > 50)
+//         {
+//             line(pic, Point2d(x1, y1), Point2d(x2, y2), Scalar(255, 255, 255), 2);
+//         }
+//     }
+
+//     imshow("res", pic);
+//     imshow("sout", out);
+//     imshow("temp", temp);
+//     waitKey(0);
+// }
