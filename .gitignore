@@ -1,4 +1,5 @@
 .vscode/*
 build/*
 work2/plot_file
-work2/selected_tesing_data
+work2/clips
+work2/out_file
