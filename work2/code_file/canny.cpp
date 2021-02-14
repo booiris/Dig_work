@@ -4,6 +4,7 @@
 #include <math.h>
 #include <string>
 #include <vector>
+#include "../head_file/Hough.h"
 using namespace std;
 using namespace cv;
 
@@ -103,28 +104,28 @@ void local_max_value(Mat &out)
                 double g_up = grad[i][j + 1] + (grad[i - 1][j + 1] - grad[i][j + 1]) * tan(point_dir[i][j]);
                 double g_down = grad[i][j - 1] + (grad[i + 1][j - 1] - grad[i][j - 1]) * tan(point_dir[i][j]);
                 if (grad[i][j] <= g_up || grad[i][j] <= g_down)
-                    out.at<uchar>(i, j) = 0;
+                    out.at<uchar>(i, j) = 0, grad[i][j] = 0;
             }
             if (point_dir[i][j] >= pi / 4 && point_dir[i][j] < pi / 2)
             {
                 double g_up = grad[i - 1][j] + (grad[i - 1][j + 1] - grad[i - 1][j]) * tan(point_dir[i][j]);
                 double g_down = grad[i + 1][j] + (grad[i + 1][j - 1] - grad[i + 1][j]) * tan(point_dir[i][j]);
                 if (grad[i][j] <= g_up || grad[i][j] <= g_down)
-                    out.at<uchar>(i, j) = 0;
+                    out.at<uchar>(i, j) = 0, grad[i][j] = 0;
             }
             if (point_dir[i][j] > -pi / 2 && point_dir[i][j] <= -pi / 4)
             {
                 double g_up = grad[i - 1][j] + (grad[i - 1][j - 1] - grad[i - 1][j]) * tan(point_dir[i][j]);
                 double g_down = grad[i + 1][j] + (grad[i + 1][j + 1] - grad[i + 1][j]) * tan(point_dir[i][j]);
                 if (grad[i][j] <= g_up || grad[i][j] <= g_down)
-                    out.at<uchar>(i, j) = 0;
+                    out.at<uchar>(i, j) = 0, grad[i][j] = 0;
             }
             if (point_dir[i][j] > -pi / 4 && point_dir[i][j] <= 0)
             {
                 double g_up = grad[i][j - 1] + (grad[i - 1][j - 1] - grad[i][j - 1]) * tan(point_dir[i][j]);
                 double g_down = grad[i][j + 1] + (grad[i + 1][j + 1] - grad[i][j + 1]) * tan(point_dir[i][j]);
                 if (grad[i][j] <= g_up || grad[i][j] <= g_down)
-                    out.at<uchar>(i, j) = 0;
+                    out.at<uchar>(i, j) = 0, grad[i][j] = 0;
             }
         }
     }
@@ -203,13 +204,28 @@ void double_threshold(uchar lowThreshold, uchar highThreshold)
     double_threshold_link(lowThreshold, highThreshold);
 }
 
+Mat canny(Mat &pic)
+{
+    double t_mat[10][10];
+    GaussianTemplate(t_mat);
+    row = pic.rows, col = pic.cols;
+    Mat gray = Mat::zeros(pic.size(), CV_8UC1);
+    rgb2gray(pic, gray);
+    out = gray.clone();
+    smooth(gray, out, t_mat);
+    sobel(gray, out);
+    local_max_value(out);
+    double_threshold(50, 200);
+    return out;
+}
+
 // int main()
 // {
 //     double t_mat[10][10];
 //     GaussianTemplate(t_mat);
-//     Mat pic = imread("../data.jpg");
-//     // Rect rect(0, (int)(0.3 * pic.rows), pic.cols, (int)(0.7 * pic.rows));
-//     // pic = pic(rect);
+//     Mat pic = imread("../data3.jpg");
+//     Rect rect(0, (int)(0.37 * pic.rows), pic.cols, (int)(0.63 * pic.rows));
+//     pic = pic(rect);
 //     // Mat gray = imread("../pic.jpg", IMREAD_GRAYSCALE);
 //     row = pic.rows, col = pic.cols;
 //     Mat gray = Mat::zeros(pic.size(), CV_8UC1);
@@ -221,24 +237,31 @@ void double_threshold(uchar lowThreshold, uchar highThreshold)
 //     double_threshold(50, 200);
 //     Mat temp = gray.clone();
 //     Canny(temp, temp, 50, 200, 3, true);
+//     hough(out, pic, 0, pic.rows, 0, 255, 0, 60, line_p);
+//     // line(pic, Point2d(0, 30), Point2d(pic.cols - 1, 40), Scalar(0, 255, 0), 1);
+//     // line(pic, Point2d(0, 250), Point2d(pic.cols - 1, 250), Scalar(255, 255, 0), 1);
+//     // hough(out, pic, 0, 30, 0, 255, 0, 20);
+//     // hough(out, pic, 30, 250, 255, 255, 0, 21);
+//     // hough(out, pic, 250, pic.rows, 0, 255, 255, 22);
+//     imshow("pic", pic);
+//     // imshow("out", out);
+//     // vector<Vec4i> lines;
+//     // HoughLinesP(out, lines, 1, CV_PI / 180, 50, 20, 20);
+//     // for (size_t i = 0; i < lines.size(); i++)
+//     // {
+//     //     Vec4i I = lines[i];
+//     //     double x1 = I[0];
+//     //     double y1 = I[1];
+//     //     double x2 = I[2];
+//     //     double y2 = I[3];
+//     //     if (abs(x1 - x2) + abs(y1 - y2) > 50)
+//     //     {
+//     //         line(pic, Point2d(x1, y1), Point2d(x2, y2), Scalar(0, 255, 255), 2);
+//     //     }
+//     // }
 
-//     vector<Vec4i> lines;
-//     HoughLinesP(temp, lines, 1, CV_PI / 180, 160, 20, 20);
-//     for (size_t i = 0; i < lines.size(); i++)
-//     {
-//         Vec4i I = lines[i];
-//         double x1 = I[0];
-//         double y1 = I[1];
-//         double x2 = I[2];
-//         double y2 = I[3];
-//         if (abs(x1 - x2) + abs(y1 - y2) > 50)
-//         {
-//             line(pic, Point2d(x1, y1), Point2d(x2, y2), Scalar(255, 255, 255), 2);
-//         }
-//     }
-
-//     imshow("res", pic);
-//     imshow("sout", out);
-//     imshow("temp", temp);
+//     // imshow("res", pic);
+//     // imshow("sout", out);
+//     // imshow("temp", temp);
 //     waitKey(0);
 // }
