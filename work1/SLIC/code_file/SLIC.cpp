@@ -23,7 +23,7 @@ Mat pic;
 double min_dis[1500][1500];
 int belong[1500][1500];
 int group_sum[5][100005];
-int param_m = 32，, k_cnt = 7; // 设置参数，param_m为计算距离时比例参数，k_cnt为超像素数量
+int param_m = 40, k_cnt = 700; // 设置参数，param_m为计算距离时比例参数，k_cnt为超像素数量
 
 inline double get_grad(int &x, int &y)
 {
@@ -192,7 +192,7 @@ int main()
     for (int i = 0; i < 40; i++)
         SLIC();
     draw();
-    imwrite("../res.png", pic);
+    imwrite("../res-40.png", pic);
     end = clock();
     cout << "time = " << double(end - start) / CLOCKS_PER_SEC << "s" << endl;
 }

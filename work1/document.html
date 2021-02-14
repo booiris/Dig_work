@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>document.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+<link rel="stylesheet" href="file:///e%3A/Dig_work/github.css" type="text/css">
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+<link rel="stylesheet" href="file:///e%3A/Dig_work/github.css" type="text/css">
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="slic%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E6%8A%A5%E5%91%8A">SLIC论文阅读报告</h1>
+<h2 id="%E8%AE%BA%E6%96%87%E7%BB%BC%E8%BF%B0%E5%AE%9E%E9%AA%8C%E5%8E%9F%E7%90%86">论文综述（实验原理）</h2>
+<p>在图像分割中，超像素是由一系列相似特征(如颜色，位置，亮度)等相似特征的像素点组成的小区域。每个像素点保留了该区域总体特征，便于后续图像分割处理。</p>
+<p>在 “SLIC Superpixels Compared to State-of-the-Art Superpixel Methods” 论文中，提出了一种获取超像素的方法。通过结合像素点的位置和颜色信息对像素点进行聚类，并用类中心值作为超像素的值。在聚类过程中，限制了聚类时搜索的范围，使得聚类收敛速度加快。在我看来就是利用了图像信息的局部性，在加速了程序运行速度的同时，又能得到不错的结果。</p>
+<h2 id="%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4">算法流程（实验步骤）</h2>
+<p>实现大致分为三个部分：</p>
+<ol>
+<li>超像素初始化</li>
+<li>聚类迭代</li>
+<li>绘制超像素图像</li>
+</ol>
+<p>算法实现难度不高，但需要注意许多细节。</p>
+<h2 id="%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82%E5%AE%9E%E9%AA%8C%E6%AD%A5%E9%AA%A4">实现细节（实验步骤）</h2>
+<h3 id="%E8%B6%85%E5%83%8F%E7%B4%A0%E5%88%9D%E5%A7%8B%E5%8C%96">超像素初始化</h3>
+<h4 id="%E8%89%B2%E5%BD%A9%E7%A9%BA%E9%97%B4%E7%9A%84%E8%BD%AC%E6%8D%A2">色彩空间的转换</h4>
+<p>论文中，对于颜色特征的计算并非在rgb空间中，而是在CIELAB空间中，这就需要对图像的色彩进行转换，先将rgb转到xyz空间，再转到Lab空间。</p>
+<h4 id="%E8%B6%85%E5%83%8F%E7%B4%A0%E4%B8%AD%E5%BF%83%E7%82%B9%E9%80%89%E5%8F%96">超像素中心点选取</h4>
+<p>首先根据超像素数量得到超像素区域为正方形时的面积，得到步长。按照步长均匀放置种子点，在每个种子点的8领域内，计算颜色梯度，取最小梯度的点，作为聚类中心，这避免了聚类中心点落在了边缘上。</p>
+<h3 id="%E8%81%9A%E7%B1%BB%E8%BF%AD%E4%BB%A3">聚类迭代</h3>
+<h4 id="%E8%81%9A%E7%B1%BB%E8%AE%A1%E7%AE%97%E5%8C%BA%E5%9F%9F">聚类计算区域</h4>
+<p>在聚类的过程中，与传统的 k-means 聚类不同，SLIC只对类中心边长为2S的正方形范围的点计算距离进行类的更新。这是算法速度快的关键原因。</p>
+<h4 id="%E8%B7%9D%E7%A6%BB%E8%AE%A1%E7%AE%97">距离计算</h4>
+<p>在计算像素点到类中心的距离时，论文结合了颜色和空间特征，进行加权计算，公式为：</p>
+<p>$$D = \sqrt{(\frac{d_c}{N_c})^2+(\frac{d_s}{N_s})^2}$$</p>
+<p>其中</p>
+<p>$$
+\begin{aligned}
+d_c &amp;= \sqrt{(l_i-l_j)^2+(a_i-a_j)^2+(b_i-b_j)^2}\\
+d_s &amp;=\sqrt{(x_i-x_j)^2+(y_i-y_j)^2}\\
+N_c &amp;= m\\
+N_s &amp;= \sqrt{\frac{N}{K}}\\
+\end{aligned}
+$$</p>
+<p>$d_c$ 为颜色欧式距离，$d_s$为空间欧式距离，$N_c$ 为一个参数m，$N_s$ 为理想超像素边长,$N$为图像像素数量，$K$为指定的超像素数量。</p>
+<p>在实际计算中，因为只是比较大小，为了加快计算，使用如下公式计算距离：</p>
+<p>$$D = \sqrt{(d_c^2+(\frac{d_s}{N_s})^2N_c^2}$$</p>
+<h3 id="%E7%BB%98%E5%88%B6%E8%B6%85%E5%83%8F%E7%B4%A0%E5%9B%BE%E5%83%8F">绘制超像素图像</h3>
+<h4 id="%E5%90%88%E5%B9%B6%E5%B0%8F%E5%83%8F%E7%B4%A0%E5%8C%BA%E5%9F%9F">合并小像素区域</h4>
+<p>因为在计算距离的时候结合了颜色特征，所以聚类出来的超像素可能并不连续，需要合并小区域像素。对于判定小区域像素，论文中判定方式为如果像素区域小于S/2，则为小区域像素，需要与周围四领域内的超像素进行合并。</p>
+<h2 id="%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C%E5%92%8C%E5%88%86%E6%9E%90">实验结果和分析</h2>
+<p>在超像素数量为700的条件下，改变参数m，分割的超像素结果如下：</p>
+<p>m=1:</p>
+<p><img src="SLIC/res-1.png" alt="w-half"></p>
+<p>m=20:</p>
+<p><img src="SLIC/res-20.png" alt="w-half"></p>
+<p>m=40:</p>
+<p><img src="SLIC/res-40.png" alt="w-half"></p>
+<p>总体来看程序根据图像的边缘将图像分为不同的超像素。</p>
+<p>随着 m 值变大，空间特征的影响距离的程度越来越大，分割出来的超像素越来越规则，而 m 小时，则超像素则越靠近图像的边界，但是形状越不规则。</p>
+<p>平均运行时间为2s左右，可以看出，SLIC是一个有效的超像素算法。</p>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });
+</script>
+
+</body>
+</html>
